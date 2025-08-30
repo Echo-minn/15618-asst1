@@ -79,14 +79,14 @@ static inline int mandel(float c_re, float c_im, int count)
 void mandelbrotSerial(
     float x0, float y0, float x1, float y1,
     int width, int height,
-    int startRow, int endRow,
+    int startRow, int endRow, int stride,
     int maxIterations,
     int output[])
 {
     float dx = (x1 - x0) / width;
     float dy = (y1 - y0) / height;
 
-    for (int j = startRow; j < endRow; j++) {
+    for (int j = startRow; j < endRow; j+=stride) {
         for (int i = 0; i < width; ++i) {
             float x = x0 + i * dx;
             float y = y0 + j * dy;
@@ -122,17 +122,19 @@ void* workerThreadStart(void* threadArgs) {
     
     // spatial decomposition: rows range
     int rowsPerThread = args->height / args->numThreads;
-    int startRow = args->threadId * rowsPerThread;
-    // edge case: the last thread will handle the remaining rows
-    int endRow = args->threadId == args->numThreads - 1 ? args->height : startRow + rowsPerThread;
+    int startRow = args->threadId;
+    int stride = args->numThreads;
 
+    double startTime = CycleTimer::currentSeconds();
     mandelbrotSerial(
         args->x0, args->y0, args->x1, args->y1,
         args->width, args->height,
-        startRow, endRow,
+        startRow, args->height, stride,
         args->maxIterations,
         args->output // each thread writes to the same output array(different parts)
     );
+    double endTime = CycleTimer::currentSeconds();
+    printf("Thread %d finished in %f seconds\n", args->threadId, endTime - startTime);
 
     return NULL;
 }
