@@ -1,0 +1,5 @@
+*.ppm
+*.o
+*.exe
+*.exe.manifest
+*.exe.manifest.res
