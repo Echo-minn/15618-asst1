@@ -81,8 +81,56 @@ void clampedExpSerial(float* values, int* exponents, float* output, int N) {
 }
 
 void clampedExpVector(float* values, int* exponents, float* output, int N) {
-    // Implement your vectorized version of clampedExpSerial here
-    //  ...
+    __cmu418_vec_float x, xpower, result;
+    __cmu418_vec_int y;
+    __cmu418_vec_int zero = _cmu418_vset_int(0);
+    __cmu418_vec_int one = _cmu418_vset_int(1);
+
+    for(int i = 0; i < N; i += VECTOR_WIDTH) {
+        // handle N % VECTOR_WIDTH != 0
+        int remaining = min(VECTOR_WIDTH, N - i);
+		__cmu418_mask maskAll;
+        maskAll = _cmu418_init_ones(remaining);
+
+        // load data and initialize
+        _cmu418_vload_float(x, values + i, maskAll);
+        _cmu418_vload_int(y, exponents + i, maskAll);
+        _cmu418_vmove_float(xpower, x, maskAll);
+        
+        // creates result with all lanes set to 1.0f
+        __cmu418_vec_float ones = _cmu418_vset_float(1.0f);
+		_cmu418_vmove_float(result, ones, maskAll);
+
+        // calculation loop
+		__cmu418_mask maskContinue;
+        _cmu418_vgt_int(maskContinue, y, zero, maskAll); // if (y > 0) {
+        while (_cmu418_cntbits(maskContinue) > 0) {	
+
+            // lanes checking: least significant bit set (y & 0x1)
+            __cmu418_vec_int temp;
+            _cmu418_vbitand_int(temp, y, one, maskContinue);		// if (y & 0x1) {
+			__cmu418_mask maskBitSet;
+            _cmu418_veq_int(maskBitSet, temp, one, maskContinue);
+            
+            _cmu418_vmult_float(result, result, xpower, maskBitSet);	// result *= xpower
+
+            _cmu418_vmult_float(xpower, xpower, xpower, maskContinue);	// xpower *= xpower
+            
+		    _cmu418_vshiftright_int(y, y, one, maskContinue);			// y >>= 1
+            
+            // update maskContinue for next iteration - only check lanes that were active
+            _cmu418_vgt_int(maskContinue, y, zero, maskContinue);
+        }
+        
+        // clamp results to 4.18f
+        __cmu418_vec_float clamp = _cmu418_vset_float(4.18f);
+        __cmu418_mask maskClamp;
+        _cmu418_vgt_float(maskClamp, result, clamp, maskAll);	// if (result > 4.18f)
+        _cmu418_vmove_float(result, clamp, maskClamp);			// result = 4.18f;
+
+        // write results back
+        _cmu418_vstore_float(output + i, result, maskAll);  	// result[i] = output[i];
+    }
 }
 
 
