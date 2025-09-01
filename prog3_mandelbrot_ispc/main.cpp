@@ -83,6 +83,7 @@ int main(int argc, char** argv) {
     float y1 = 1;
 
     bool useTasks = false;
+    int threadCount = 16;
 
     // Support VIEWCNT views
     float scaleValues[VIEWCNT+1] = { 1.0f, 1.0f, 0.015f, 0.02f, 0.02f, 0.02f,  0.002f };
@@ -94,6 +95,7 @@ int main(int argc, char** argv) {
     int opt;
     static struct option long_options[] = {
         {"tasks", 0, 0, 't'},
+        {"threads", 1, 0, 't'},
         {"view",  1, 0, 'v'},
         {"help",  0, 0, '?'},
         {0 ,0, 0, 0}
@@ -104,6 +106,7 @@ int main(int argc, char** argv) {
         switch (opt) {
         case 't':
             useTasks = true;
+            threadCount = atoi(optarg);
             break;
         case 'v':
         {
@@ -141,7 +144,7 @@ int main(int argc, char** argv) {
     double minSerial = 1e30;
     for (int i = 0; i < 3; ++i) {
         double startTime = CycleTimer::currentSeconds();
-        mandelbrotSerial(x0, y0, x1, y1, width, height, 0, height, maxIterations, output_serial);
+        mandelbrotSerial(x0, y0, x1, y1, width, height, 0, height, maxIterations, threadCount, output_serial);
         double endTime = CycleTimer::currentSeconds();
         minSerial = std::min(minSerial, endTime - startTime);
     }
