@@ -65,9 +65,10 @@ export void mandelbrot_ispc_withtasks(uniform float x0, uniform float y0,
                                       uniform float x1, uniform float y1,
                                       uniform int width, uniform int height,
                                       uniform int maxIterations,
-                                      uniform int threadCount,
                                       uniform int output[])
 {
+
+    uniform int threadCount = 16;
     // handle rows are not divisible by the number of tasks
     uniform int rowsPerTask = (height + threadCount - 1) / threadCount;
 
