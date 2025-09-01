@@ -144,7 +144,7 @@ int main(int argc, char** argv) {
     double minSerial = 1e30;
     for (int i = 0; i < 3; ++i) {
         double startTime = CycleTimer::currentSeconds();
-        mandelbrotSerial(x0, y0, x1, y1, width, height, 0, height, maxIterations, threadCount, output_serial);
+        mandelbrotSerial(x0, y0, x1, y1, width, height, 0, height, maxIterations, output_serial);
         double endTime = CycleTimer::currentSeconds();
         minSerial = std::min(minSerial, endTime - startTime);
     }
@@ -193,7 +193,7 @@ int main(int argc, char** argv) {
         //
         for (int i = 0; i < 3; ++i) {
             double startTime = CycleTimer::currentSeconds();
-            mandelbrot_ispc_withtasks(x0, y0, x1, y1, width, height, maxIterations, output_ispc_tasks);
+            mandelbrot_ispc_withtasks(x0, y0, x1, y1, width, height, maxIterations, threadCount, output_ispc_tasks);
             double endTime = CycleTimer::currentSeconds();
             minTaskISPC = std::min(minTaskISPC, endTime - startTime);
         }
