@@ -94,14 +94,13 @@ int main(int argc, char** argv) {
     // parse commandline options ////////////////////////////////////////////
     int opt;
     static struct option long_options[] = {
-        {"tasks", 0, 0, 't'},
-        {"threads", 1, 0, 't'},
+        {"tasks", 1, 0, 't'},
         {"view",  1, 0, 'v'},
         {"help",  0, 0, '?'},
         {0 ,0, 0, 0}
     };
 
-    while ((opt = getopt_long(argc, argv, "tv:?", long_options, NULL)) != EOF) {
+    while ((opt = getopt_long(argc, argv, "t:v:?", long_options, NULL)) != EOF) {
 
         switch (opt) {
         case 't':
