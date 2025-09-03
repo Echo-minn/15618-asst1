@@ -7,7 +7,7 @@
 extern void mandelbrotSerial(
     float x0, float y0, float x1, float y1,
     int width, int height,
-    int startRow, int endRow,
+    int startRow, int stride,
     int maxIterations,
     int output[]);
 
@@ -137,7 +137,7 @@ int main(int argc, char** argv) {
     double minSerial = 1e30;
     for (int i = 0; i < 3; ++i) {
         double startTime = CycleTimer::currentSeconds();
-        mandelbrotSerial(x0, y0, x1, y1, width, height, 0, height, maxIterations, output_serial);
+        mandelbrotSerial(x0, y0, x1, y1, width, height, 0, 1, maxIterations, output_serial);
         double endTime = CycleTimer::currentSeconds();
         minSerial = std::min(minSerial, endTime - startTime);
     }
