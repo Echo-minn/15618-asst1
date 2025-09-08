@@ -33,12 +33,11 @@ void saxpyStreaming(int N,
         // Perform SAXPY operation: scale * X[i] + Y[i]
         __m128 vecResult = _mm_add_ps(_mm_mul_ps(vecScale, vecX), vecY);
         
-        // Store result using non-temporal store (bypasses cache)
-        // This reduces memory pressure by not polluting the cache with result data
+        // Store result directly to memory using non-temporal store (bypasses cache)
         _mm_stream_ps(&result[i], vecResult);
     }
     
-    // Handle remaining elements (if N is not divisible by 4)
+    // if N is not divisible by 4
     for (; i < N; i++) {
         result[i] = scale * X[i] + Y[i];
     }
