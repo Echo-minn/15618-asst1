@@ -103,6 +103,34 @@ export void saxpy_ispc_withtasks(uniform int N,
     launch[N/span] saxpy_ispc_task(N, span, scale, X, Y, result);
 }
 
+// Task wrapper for blocked implementation
+task void saxpy_ispc_blocked_wrapper(uniform int N,
+                                    uniform int elementsPerTask,
+                                    uniform float scale,
+                                    uniform float X[], 
+                                    uniform float Y[],
+                                    uniform float result[])
+{
+    uniform int taskStart = taskIndex * elementsPerTask;
+    uniform int taskEnd = min(N, taskStart + elementsPerTask);
+    
+    saxpy_ispc_blocked_task(N, taskStart, taskEnd, scale, X, Y, result);
+}
+
+// Task wrapper for multipass implementation
+task void saxpy_ispc_multipass_wrapper(uniform int N,
+                                      uniform int elementsPerTask,
+                                      uniform float scale,
+                                      uniform float X[], 
+                                      uniform float Y[],
+                                      uniform float result[])
+{
+    uniform int taskStart = taskIndex * elementsPerTask;
+    uniform int taskEnd = min(N, taskStart + elementsPerTask);
+    
+    saxpy_ispc_multipass_task(N, taskStart, taskEnd, scale, X, Y, result);
+}
+
 // Optimized version with cache blocking and better task distribution
 export void saxpy_ispc_blocked(uniform int N,
                               uniform float scale,
@@ -115,9 +143,7 @@ export void saxpy_ispc_blocked(uniform int N,
     uniform int NUM_TASKS = 16;
     uniform int elementsPerTask = (N + NUM_TASKS - 1) / NUM_TASKS;
     
-    launch[NUM_TASKS] saxpy_ispc_blocked_task(N, taskIndex * elementsPerTask, 
-                                             min(N, (taskIndex + 1) * elementsPerTask),
-                                             scale, X, Y, result);
+    launch[NUM_TASKS] saxpy_ispc_blocked_wrapper(N, elementsPerTask, scale, X, Y, result);
 }
 
 // Version with increased arithmetic intensity
@@ -130,7 +156,5 @@ export void saxpy_ispc_multipass(uniform int N,
     uniform int NUM_TASKS = 16;
     uniform int elementsPerTask = (N + NUM_TASKS - 1) / NUM_TASKS;
     
-    launch[NUM_TASKS] saxpy_ispc_multipass_task(N, taskIndex * elementsPerTask, 
-                                               min(N, (taskIndex + 1) * elementsPerTask),
-                                               scale, X, Y, result);
+    launch[NUM_TASKS] saxpy_ispc_multipass_wrapper(N, elementsPerTask, scale, X, Y, result);
 }
