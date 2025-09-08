@@ -119,52 +119,9 @@ int main() {
            toBW(TOTAL_BYTES, minTaskISPC),
            toGFLOPS(TOTAL_FLOPS, minTaskISPC));
 
-    // Clear out the buffer
-    for (unsigned int i = 0; i < N; ++i)
-        result[i] = 0.f;
-
-    //
-    // Run the ISPC blocked implementation
-    //
-    double minBlockedISPC = 1e30;
-    for (int i = 0; i < 3; ++i) {
-        double startTime = CycleTimer::currentSeconds();
-        saxpy_ispc_blocked(N, scale, arrayX, arrayY, result);
-        double endTime = CycleTimer::currentSeconds();
-        minBlockedISPC = std::min(minBlockedISPC, endTime - startTime);
-    }
-
-    printf("[saxpy blocked ispc]:\t[%.3f] ms\t[%.3f] GB/s\t[%.3f] GFLOPS\n",
-           minBlockedISPC * 1000,
-           toBW(TOTAL_BYTES, minBlockedISPC),
-           toGFLOPS(TOTAL_FLOPS, minBlockedISPC));
-
-    // Clear out the buffer
-    for (unsigned int i = 0; i < N; ++i)
-        result[i] = 0.f;
-
-    //
-    // Run the ISPC multipass implementation (increased arithmetic intensity)
-    //
-    double minMultipassISPC = 1e30;
-    const unsigned int MULTIPASS_FLOPS = N * 4; // 4 passes with more operations
-    for (int i = 0; i < 3; ++i) {
-        double startTime = CycleTimer::currentSeconds();
-        saxpy_ispc_multipass(N, scale, arrayX, arrayY, result);
-        double endTime = CycleTimer::currentSeconds();
-        minMultipassISPC = std::min(minMultipassISPC, endTime - startTime);
-    }
-
-    printf("[saxpy multipass ispc]:\t[%.3f] ms\t[%.3f] GB/s\t[%.3f] GFLOPS\n",
-           minMultipassISPC * 1000,
-           toBW(TOTAL_BYTES, minMultipassISPC),
-           toGFLOPS(MULTIPASS_FLOPS, minMultipassISPC));
-
     printf("\t\t\t\t(%.2fx speedup from streaming)\n", minSerial/minStreaming);
     printf("\t\t\t\t(%.2fx speedup from ISPC)\n", minSerial/minISPC);
     printf("\t\t\t\t(%.2fx speedup from task ISPC)\n", minSerial/minTaskISPC);
-    printf("\t\t\t\t(%.2fx speedup from blocked ISPC)\n", minSerial/minBlockedISPC);
-    printf("\t\t\t\t(%.2fx speedup from multipass ISPC)\n", minSerial/minMultipassISPC);
 
     return 0;
 }
